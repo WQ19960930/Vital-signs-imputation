@@ -10,7 +10,6 @@ from utils import *
 from tensorflow.python.ops import math_ops
 from GRUI import mygru_cell
 SEED = 1
-os.environ['PYTHONHASHSEED'] = str(SEED)
 random.seed(SEED)
 np.random.seed(SEED)
 tf.set_random_seed(SEED)
@@ -32,7 +31,7 @@ class E2EGAN(object):
         self.lr = args.lr                 
         self.epoch = args.epoch     
         self.batch_size = args.batch_size
-        self.n_inputs = args.n_inputs                 # MNIST data input (img shape: 28*28)
+        self.n_inputs = args.n_inputs                 
         self.n_steps = datasets.maxLength                                # time steps
         self.n_hidden_units = args.n_hidden_units        # neurons in hidden layer
         self.run_type=args.run_type
@@ -102,7 +101,7 @@ class E2EGAN(object):
             
             X_in = tf.reshape(x, [-1, 1, self.n_inputs+self.n_hidden_units])
             
-            init_state = self.grui_cell_g2.zero_state(self.batch_size, dtype=tf.float32) # 初始化全零 state
+            init_state = self.grui_cell_g2.zero_state(self.batch_size, dtype=tf.float32) # 初始化全零
             #z=tf.reshape(z,[self.batch_size,1,self.z_dim])
             seq_len=tf.constant(1,shape=[self.batch_size])
             
@@ -184,7 +183,7 @@ class E2EGAN(object):
          
            
             out_logit=tf.matmul(tf.nn.dropout(final_state,Keep_prob,seed = SEED), w_out) + b_out
-            out =tf.nn.sigmoid(out_logit)    #选取最后一个 output
+            out =tf.nn.sigmoid(out_logit)    #选取最后一个output
             return out,out_logit
 
 
@@ -199,7 +198,7 @@ class E2EGAN(object):
           
             
             x = x + ita 
-            #ita 应该用numpy初始化为很小的正态分布
+            
             m = tf.reshape(m,[-1,self.n_inputs])
             x = tf.reshape(x, [-1, self.n_inputs])
             deltaPre = tf.reshape(deltaPre,[-1,self.n_inputs])
@@ -233,7 +232,7 @@ class E2EGAN(object):
         # first feed noize in rnn, then feed the previous output into next input
         # or we can feed noize and previous output into next input in future version
         with tf.variable_scope("g_enerator", reuse=reuse):
-            #gennerate 
+            #generate 
             z = self.time_series_to_z(x, m, ita, deltaPre, X_lengths, Keep_prob, reuse)
             #自编码器，x映射成z
 
@@ -428,6 +427,7 @@ class E2EGAN(object):
     def pretrain(self, start_epoch, counter, start_time):
         
         if start_epoch < self.pretrain_epoch:
+            
             #todo
             for epoch in range(start_epoch, self.pretrain_epoch):
             # get batch data
@@ -669,7 +669,7 @@ class E2EGAN(object):
 
 
     def save_imputation(self,impute_out,batchid,data_x_lengths,imputed_delta,data_y, runtype):
-        #填充后的数据全是n_steps长度！，但只有data_x_lengths才是可用的
+        
         if runtype == 1:
             imputation_dir="imputation_train_results"
         elif runtype == 2:
